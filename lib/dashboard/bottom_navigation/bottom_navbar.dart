@@ -1,4 +1,4 @@
-import 'package:flexfund_app/dashboard/dashboard_screens/create_fundraising/create_fundraising.dart';
+import 'package:flexfund_app/dashboard/dashboard_screens/create_fundraising/create_fundraising_form.dart';
 import 'package:flexfund_app/dashboard/dashboard_screens/history/history.dart';
 import 'package:flexfund_app/dashboard/dashboard_screens/home.dart';
 import 'package:flexfund_app/theme/color_theme.dart';
@@ -20,7 +20,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   }
 
   List<Widget> _buildScreens() {
-    return [const Dashboard(), const CreateFundraising(), History()];
+    return [const Dashboard(), CreateFundraisingForm(), History()];
   }
 
   List<PersistentBottomNavBarItem> _navBarsItems() {

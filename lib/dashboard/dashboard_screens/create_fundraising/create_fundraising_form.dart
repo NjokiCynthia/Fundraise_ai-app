@@ -2,6 +2,7 @@ import 'package:flexfund_app/dashboard/dashboard_screens/create_fundraising/ai_c
 import 'package:flexfund_app/theme/color_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class CreateFundraisingForm extends StatefulWidget {
   const CreateFundraisingForm({super.key});
@@ -69,44 +70,30 @@ class _CreateFundraisingFormState extends State<CreateFundraisingForm> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        // Let user type manually — no action needed
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'You can type the description above.',
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text('Just type the description'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        // Navigate to AI chat page and await result
-                        final aiDescription = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                // (context) => const AIDescriptionChatScreen(),
-                                (context) => CampaignChatAssistant(),
-                          ),
-                        );
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      // Navigate to AI chat page and await result
+                      final aiDescription =
+                          await PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: const CampaignChatAssistant(),
+                            withNavBar: false,
+                            pageTransitionAnimation:
+                                PageTransitionAnimation.cupertino,
+                          );
 
-                        if (aiDescription != null && aiDescription is String) {
-                          setState(() {
-                            _descriptionController.text = aiDescription;
-                          });
-                        }
-                      },
-                      child: const Text('Use AI to generate description'),
-                    ),
-                  ],
+                      if (aiDescription != null && aiDescription is String) {
+                        setState(() {
+                          _descriptionController.text = aiDescription;
+                        });
+                      }
+                    },
+                    child: const Text('Use AI to generate description'),
+                  ),
                 ),
+
                 SizedBox(height: 20),
                 SizedBox(
                   height: 48,
