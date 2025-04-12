@@ -1,5 +1,7 @@
+import 'package:flexfund_app/dashboard/dashboard_screens/create_fundraising/create_fundraising_form.dart';
 import 'package:flexfund_app/theme/color_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class CreateFundraising extends StatefulWidget {
   const CreateFundraising({super.key});
@@ -29,97 +31,6 @@ class _CreateFundraisingState extends State<CreateFundraising>
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  void _showCategoryBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        String? tempSelected = selectedCategory;
-
-        return FractionallySizedBox(
-          heightFactor: 0.5,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: StatefulBuilder(
-              builder: (context, setModalState) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Please select a category for your fundraiser',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Please select an option',
-                      ),
-                      value: tempSelected,
-                      items:
-                          categories
-                              .map(
-                                (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)),
-                              )
-                              .toList(),
-                      onChanged: (value) {
-                        setModalState(() {
-                          tempSelected = value;
-                        });
-                      },
-                    ),
-                    const Spacer(),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed:
-                            tempSelected != null
-                                ? () {
-                                  Navigator.pop(context);
-                                  setState(() {
-                                    selectedCategory = tempSelected;
-                                  });
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => FundraiserTypePage(
-                                            type: selectedCategory!,
-                                          ),
-                                    ),
-                                  );
-                                }
-                                : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: FlexFundTheme.primaryGreen,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text(
-                          'Confirm',
-                          style: FlexFundTheme.buttonText,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -192,7 +103,15 @@ class _CreateFundraisingState extends State<CreateFundraising>
                       left: 24,
                       right: 24,
                       child: ElevatedButton(
-                        onPressed: _showCategoryBottomSheet,
+                        onPressed: () {
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: CreateFundraisingForm(),
+                            withNavBar: false,
+                            pageTransitionAnimation:
+                                PageTransitionAnimation.cupertino,
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -215,30 +134,6 @@ class _CreateFundraisingState extends State<CreateFundraising>
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Page that shows selected fundraiser type
-class FundraiserTypePage extends StatelessWidget {
-  final String type;
-
-  const FundraiserTypePage({super.key, required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(type),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-      ),
-      body: Center(
-        child: Text(
-          type,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
       ),
     );
   }

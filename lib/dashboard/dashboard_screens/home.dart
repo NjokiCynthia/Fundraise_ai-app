@@ -401,7 +401,7 @@ class GetInvolvedCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FontAwesomeIcons.handsHelping, color: Colors.white, size: 40),
+          Icon(FontAwesomeIcons.handshakeAngle, color: Colors.white, size: 40),
           const SizedBox(height: 16),
           Text(
             'More Ways to Get Involved',

@@ -1,0 +1,131 @@
+import 'package:flutter/material.dart';
+import 'package:flexfund_app/services/gemini_service.dart';
+
+class CampaignChatAssistant extends StatefulWidget {
+  const CampaignChatAssistant({Key? key}) : super(key: key);
+
+  @override
+  _CampaignChatAssistantState createState() => _CampaignChatAssistantState();
+}
+
+class _CampaignChatAssistantState extends State<CampaignChatAssistant> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _goalController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  String generatedDescription = '';
+  bool isLoading = false;
+
+  void _generateDescription() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final name = _nameController.text;
+    final goal = _goalController.text;
+    final targetAmount = _amountController.text;
+
+    if (name.isNotEmpty && goal.isNotEmpty && targetAmount.isNotEmpty) {
+      final description = await GeminiService.generateDescription(
+        name: name,
+        goal: goal,
+        targetAmount: targetAmount,
+      );
+
+      setState(() {
+        generatedDescription = description;
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        generatedDescription = 'Please fill out all fields to generate a description.';
+        isLoading = false;
+      });
+    }
+  }
+
+  void _resetFields() {
+    setState(() {
+      _nameController.clear();
+      _goalController.clear();
+      _amountController.clear();
+      generatedDescription = '';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Campaign Chat Assistant'),
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Campaign Name'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _goalController,
+                decoration: const InputDecoration(labelText: 'Campaign Goal'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _amountController,
+                decoration: const InputDecoration(labelText: 'Target Amount'),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _generateDescription,
+                child: isLoading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : const Text('Generate Description'),
+              ),
+              const SizedBox(height: 20),
+              if (generatedDescription.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Generated Description:',
+                     // style: Theme.of(context).textTheme.headline6,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(generatedDescription),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _resetFields,
+                          child: const Text('Regenerate'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Handle action to accept the description
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Description Accepted')),
+                            );
+                          },
+                          child: const Text('Accept Description'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

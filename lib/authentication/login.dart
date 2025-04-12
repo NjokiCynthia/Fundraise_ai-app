@@ -60,11 +60,6 @@ class _LoginState extends State<Login> {
                         labelText: 'Enter email address',
                         prefixIcon: Icons.email_outlined,
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          finalPassword = value;
-                        });
-                      },
                     ),
                     const SizedBox(height: 30),
                     TextFormField(
