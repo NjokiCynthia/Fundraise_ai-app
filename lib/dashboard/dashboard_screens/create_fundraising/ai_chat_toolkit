@@ -1,6 +1,7 @@
 import 'package:flexfund_app/services/gemini_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flexfund_app/theme/color_theme.dart';
+import 'package:flutter/services.dart';
 
 class CampaignChatAssistant extends StatefulWidget {
   const CampaignChatAssistant({Key? key}) : super(key: key);
@@ -10,110 +11,174 @@ class CampaignChatAssistant extends StatefulWidget {
 }
 
 class _CampaignChatAssistantState extends State<CampaignChatAssistant> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _goalController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
+  String campaignName = '';
+  String campaignGoal = '';
+  String campaignAmount = '';
+  String selectedDescription = '';
 
-  String generatedDescription = '';
+  int step = 0;
   bool isLoading = false;
+  List<String> generatedOptions = [];
 
-  void _generateDescription() async {
+  final TextEditingController _inputController = TextEditingController();
+
+  void _handleNext(String value) async {
     setState(() {
-      isLoading = true;
-      generatedDescription = '';
+      if (step == 0) {
+        campaignName = value.trim();
+      } else if (step == 1) {
+        campaignGoal = value.trim();
+      } else if (step == 2) {
+        campaignAmount = value.trim();
+      }
+      _inputController.clear();
+      step++;
     });
 
-    final name = _nameController.text.trim();
-    final goal = _goalController.text.trim();
-    final targetAmount = _amountController.text.trim();
+    if (step == 3) {
+      setState(() => isLoading = true);
 
-    if (name.isNotEmpty && goal.isNotEmpty && targetAmount.isNotEmpty) {
       final description = await GeminiService.generateDescription(
-        name: name,
-        goal: goal,
-        targetAmount: targetAmount,
+        name: campaignName,
+        goal: campaignGoal,
+        targetAmount: campaignAmount,
       );
 
       setState(() {
-        generatedDescription = description;
-        isLoading = false;
-      });
-    } else {
-      setState(() {
-        generatedDescription =
-            'Please fill out all fields to generate a description.';
+        generatedOptions = description
+            .split(RegExp(r'Option \d+:'))
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
         isLoading = false;
       });
     }
   }
 
-  void _showEditDialog(String initialText) {
-    final TextEditingController _editController =
-        TextEditingController(text: initialText);
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Copied to clipboard!')),
+    );
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Description'),
-        content: TextField(
-          controller: _editController,
-          maxLines: 6,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-          ),
+  Widget _chatBubble(String text, {bool isUser = false}) {
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isUser ? Colors.blue.shade100 : const Color(0xFFE1FFC7),
+          borderRadius: BorderRadius.circular(16),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, _editController.text.trim());
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Description selected!')),
-              );
-            },
-            child: const Text('Use this'),
-          ),
-        ],
+        child: Text(text, style: const TextStyle(fontSize: 16)),
       ),
     );
   }
 
-  Widget _buildChatBubble(String text) {
-    return GestureDetector(
-      onTap: () => _showEditDialog(text),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: Colors.green.shade700,
-            child: const Icon(Icons.smart_toy, size: 16, color: Colors.white),
-          ),
-          const SizedBox(width: 10),
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE1FFC7),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(16),
-                  topLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
-                ),
-              ),
-              child: Text(
-                text,
-                style: const TextStyle(fontSize: 16),
-              ),
+  Widget _inputSection(String labelText, String hintText) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _inputController,
+            decoration: InputDecoration(
+              labelText: labelText,
+              hintText: hintText,
+              border: const OutlineInputBorder(),
             ),
           ),
-        ],
+        ),
+        const SizedBox(width: 10),
+        ElevatedButton(
+          onPressed: () {
+            if (_inputController.text.trim().isNotEmpty) {
+              _handleNext(_inputController.text);
+            }
+          },
+          child: const Icon(Icons.send),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOptionCard(String text) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(text, style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: () => _copyToClipboard(text),
+                  icon: const Icon(Icons.copy, size: 18),
+                  label: const Text("Copy"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() => selectedDescription = text);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Description selected!')),
+                    );
+                  },
+                  child: const Text("Use this"),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildChatFlow() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (step > 0) _chatBubble('Campaign name: $campaignName', isUser: true),
+        if (step > 1) _chatBubble('Goal: $campaignGoal', isUser: true),
+        if (step > 2) _chatBubble('Target amount: KES $campaignAmount', isUser: true),
+        const SizedBox(height: 20),
+        if (step == 0)
+          _inputSection('Enter Campaign Name', 'e.g., School Fees Drive'),
+        if (step == 1)
+          _inputSection('Enter Campaign Goal', 'e.g., Raise funds for tuition'),
+        if (step == 2)
+          _inputSection('Enter Target Amount (KES)', 'e.g., 15000'),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator()),
+        if (step >= 3 && !isLoading)
+          ...generatedOptions.map((option) => _buildOptionCard(option)),
+        if (selectedDescription.isNotEmpty)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              const Text(
+                'Selected Description:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(selectedDescription),
+              ),
+            ],
+          ),
+      ],
     );
   }
 
@@ -131,81 +196,13 @@ class _CampaignChatAssistantState extends State<CampaignChatAssistant> {
         body: Padding(
           padding: const EdgeInsets.all(20.0),
           child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Please fill in the fields below to generate a suitable description for your campaign',
-                style:FlexFundTheme.headlineSmall),
-                SizedBox(height:30),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: FlexFundTheme.textFieldDecoration(
-                    labelText: 'Campaign Name',
-                    prefixIcon: Icons.campaign,
-                  ),
-                ),
-                
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _goalController,
-                  decoration: FlexFundTheme.textFieldDecoration(
-                    labelText: 'Campaign Goal',
-                    prefixIcon: Icons.flag_outlined,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _amountController,
-                  decoration: FlexFundTheme.textFieldDecoration(
-                    labelText: 'Target Amount',
-                    prefixIcon: Icons.attach_money_outlined,
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: _generateDescription,
-           style: OutlinedButton.styleFrom(
-    side: BorderSide(
-      color: FlexFundTheme.primaryGreen,
-      width: 2,            
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(8),
-    ),
-  ),
-                    child: isLoading
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: FlexFundTheme.primaryGreen,
-                            ),
-                          )
-                        : const Text('Generate Description'),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                if (generatedDescription.isNotEmpty)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Tap the description below to edit or use it:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildChatBubble(generatedDescription),
-                    ],
-                  ),
-              ],
-            ),
+            child: Column(children:[
+              Text('Please enter campaign name, goal and target to generate a compelling description for your campaign', style: FlexFundTheme.headlineSmall),
+              SizedBox(height: 30),
+              _buildChatFlow(),
+            ])
+            
+            
           ),
         ),
       ),

@@ -8,18 +8,33 @@ class GeminiService {
     apiKey: _apiKey,
   );
 
-  static Future<String> generateDescription({
+  static Future<List<String>> generateDescriptions({
     required String name,
     required String goal,
     required String targetAmount,
   }) async {
     final prompt = '''
-Generate a short, inspiring fundraising campaign description for a campaign called "$name" that aims to raise KES $targetAmount for the goal: "$goal".
-Avoid being too long. Make it human, Kenyan-friendly, and motivational.
+Generate 3 short, inspiring fundraising campaign descriptions for a campaign called "$name" that aims to raise KES $targetAmount for the goal: "$goal".
+
+Keep them Kenyan-friendly, warm, motivational, and easy to understand. Label each as "Option 1:", "Option 2:", and "Option 3:". Avoid making them too long.
 ''';
 
     final content = [Content.text(prompt)];
     final response = await _model.generateContent(content);
-    return response.text ?? "No description generated.";
+    final text = response.text ?? '';
+
+    // Extract the 3 options
+    final options =
+        RegExp(r'Option \d+:').allMatches(text).map((m) => m.start).toList();
+
+    final descriptions = <String>[];
+    for (int i = 0; i < options.length; i++) {
+      final start = options[i];
+      final end = (i + 1 < options.length) ? options[i + 1] : text.length;
+      final snippet = text.substring(start, end).trim();
+      descriptions.add(snippet);
+    }
+
+    return descriptions;
   }
 }
