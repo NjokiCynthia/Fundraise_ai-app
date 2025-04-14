@@ -38,20 +38,15 @@ class _CampaignChatAssistantState extends State<CampaignChatAssistant> {
     if (step == 3) {
       setState(() => isLoading = true);
 
-      final description = await GeminiService.generateDescription(
+      final description = await GeminiService.generateDescriptions(
         name: campaignName,
         goal: campaignGoal,
         targetAmount: campaignAmount,
       );
-
-      setState(() {
-        generatedOptions = description
-            .split(RegExp(r'Option \d+:'))
-            .map((e) => e.trim())
-            .where((e) => e.isNotEmpty)
-            .toList();
-        isLoading = false;
-      });
+setState(() {
+  generatedOptions = description;
+  isLoading = false;
+});
     }
   }
 
