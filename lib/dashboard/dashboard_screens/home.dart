@@ -32,155 +32,166 @@ class _DashboardState extends State<Dashboard> {
           IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CarouselSlider(
-              options: CarouselOptions(
-                height: 300,
-                autoPlay: true,
-                enlargeCenterPage: true,
-              ),
-              items: [WelcomeCard(), ProgressUpdateCard(), GetInvolvedCard()],
-            ),
-
-            const SizedBox(height: 24),
-
-            // Top Categories
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Top Categories",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "Add more",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: FlexFundTheme.primaryGreen,
-                    decoration: TextDecoration.underline,
-                    decorationColor: FlexFundTheme.primaryGreen,
-                    decorationThickness: 2,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CarouselSlider(
+                    options: CarouselOptions(
+                      height: 300,
+                      autoPlay: true,
+                      enlargeCenterPage: true,
+                    ),
+                    items: [
+                      WelcomeCard(),
+                      ProgressUpdateCard(),
+                      GetInvolvedCard(),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 40,
-              child: Row(
-                children: List.generate(
-                  topCategories.length,
-                  (index) => Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Chip(
-                        label: Text(
-                          topCategories[index],
-                          textAlign: TextAlign.center,
+
+                  const SizedBox(height: 24),
+
+                  // Top Categories
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Top Categories",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                        backgroundColor: FlexFundTheme.primaryGreen.withValues(
-                          alpha: 0.2,
+                      ),
+                      Text(
+                        "Add more",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: FlexFundTheme.primaryGreen,
+                          decoration: TextDecoration.underline,
+                          decorationColor: FlexFundTheme.primaryGreen,
+                          decorationThickness: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 40,
+                    child: Row(
+                      children: List.generate(
+                        topCategories.length,
+                        (index) => Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Chip(
+                              label: Text(
+                                topCategories[index],
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: FlexFundTheme.primaryGreen
+                                  .withValues(alpha: 0.2),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Recommended For You",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                GestureDetector(
-                  onTap: () {},
-                  child: Text(
-                    "View all",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: FlexFundTheme.primaryGreen,
-                      decoration: TextDecoration.underline,
-                      decorationColor: FlexFundTheme.primaryGreen,
-                      decorationThickness: 2,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Recommended Fundraisers
-                    ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: 5,
-                      itemBuilder: (context, index) {
-                        return _buildFundraiserCard(index);
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-
-            // Fixed Bottom Section
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: const Color.fromARGB(255, 202, 223, 242)
-                  ..withValues(alpha: 0.1),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.campaign, color: Colors.blue, size: 40),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Need help funding a goal?",
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Recommended For You",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {},
+                        child: Text(
+                          "View all",
                           style: TextStyle(
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            color: FlexFundTheme.primaryGreen,
+                            decoration: TextDecoration.underline,
+                            decorationColor: FlexFundTheme.primaryGreen,
+                            decorationThickness: 2,
                           ),
                         ),
-                        SizedBox(height: 4),
-                        Text("Start a fundraiser in minutes!"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: 2,
+                    itemBuilder: (context, index) {
+                      return _buildFundraiserCard(index);
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Fixed Bottom Section
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: const Color.fromARGB(255, 202, 223, 242)
+                        ..withValues(alpha: 0.1),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.campaign,
+                          color: Colors.blue,
+                          size: 40,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                "Need help funding a goal?",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text("Start a fundraiser in minutes!"),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: FlexFundTheme.primaryGreen,
+                          ),
+                          onPressed: () {},
+                          child: const Text(
+                            "Create",
+                            style: FlexFundTheme.buttonText,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FlexFundTheme.primaryGreen,
-                    ),
-                    onPressed: () {},
-                    child: const Text(
-                      "Create",
-                      style: FlexFundTheme.buttonText,
-                    ),
-                  ),
+                  SizedBox(height: 20),
                 ],
               ),
             ),
-            SizedBox(height: 20),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -345,11 +356,11 @@ class ProgressUpdateCard extends StatelessWidget {
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Pledge progress: 5,000 of 10,000',
-            style: TextStyle(color: Colors.white70),
-          ),
-          const SizedBox(height: 20),
+          // const Text(R
+          //   'Pledge progress: 5,000 of 10,000',
+          //   style: TextStyle(color: Colors.white70),
+          // ),
+          // const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

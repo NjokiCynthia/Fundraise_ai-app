@@ -1,5 +1,6 @@
 import 'package:flexfund_app/authentication/signup.dart';
 import 'package:flexfund_app/dashboard/bottom_navigation/bottom_navbar.dart';
+import 'package:flexfund_app/services/api_service.dart';
 import 'package:flexfund_app/theme/color_theme.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +12,7 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController emailcontroller = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   String phoneNoController = '';
   String finalPassword = '';
@@ -56,6 +57,7 @@ class _LoginState extends State<Login> {
 
                     SizedBox(height: 20),
                     TextFormField(
+                      controller: emailcontroller,
                       decoration: FlexFundTheme.textFieldDecoration(
                         labelText: 'Enter email address',
                         prefixIcon: Icons.email_outlined,
@@ -89,13 +91,45 @@ class _LoginState extends State<Login> {
                       height: 48,
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BottomNavBar(),
-                            ),
+                        onPressed: () async {
+                          final name = passwordController.text.trim();
+                          final email = emailcontroller.text.trim();
+
+                          if (email.isEmpty || name.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Please enter both email and password',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final apiService = ApiService(
+                            'https://fundraise-3fdcd0d20b2d.herokuapp.com',
                           );
+
+                          try {
+                            final result = await apiService.createUser(
+                              email,
+                              name,
+                            );
+                            // Optionally check result contents
+                            print('Login Success: $result');
+
+                            // Navigate to dashboard
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BottomNavBar(),
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Login failed: $e')),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: FlexFundTheme.primaryGreen,

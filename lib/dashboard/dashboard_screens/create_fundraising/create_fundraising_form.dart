@@ -1,4 +1,5 @@
 import 'package:flexfund_app/dashboard/dashboard_screens/create_fundraising/ai_chat_toolkit';
+import 'package:flexfund_app/services/api_service.dart';
 import 'package:flexfund_app/theme/color_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -99,7 +100,63 @@ class _CreateFundraisingFormState extends State<CreateFundraisingForm> {
                   height: 48,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final campaignName = _campaignNameController.text.trim();
+                      final targetAmount = double.tryParse(
+                        _targetAmountController.text.trim(),
+                      );
+                      final goal = _goalController.text.trim();
+                      final description = _descriptionController.text.trim();
+
+                      if (campaignName.isEmpty ||
+                          targetAmount == null ||
+                          goal.isEmpty ||
+                          description.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please fill in all the fields'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      final api = ApiService(
+                        'https://fundraise-3fdcd0d20b2d.herokuapp.com',
+                      );
+
+                      try {
+                        final result = await api.createFundraiser(
+                          campaignName: campaignName,
+                          targetAmount: targetAmount,
+                          goal: goal,
+                          description: description,
+                        );
+
+                        // Success feedback
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Campaign Created: ${result['message'] ?? 'Success!'}',
+                            ),
+                          ),
+                        );
+
+                        // Optionally: Navigate back or clear fields
+                        Navigator.pop(context, {
+                          'campaignName': campaignName,
+                          'targetAmount': targetAmount,
+                          'goal': goal,
+                          'description': description,
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error creating campaign: $e'),
+                          ),
+                        );
+                      }
+                    },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: FlexFundTheme.primaryGreen,
 
